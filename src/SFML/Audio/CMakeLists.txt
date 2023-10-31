@@ -11,6 +11,7 @@ set(SRC
     ${INCROOT}/Export.hpp
     ${SRCROOT}/Listener.cpp
     ${INCROOT}/Listener.hpp
+    ${SRCROOT}/Miniaudio.cpp
     ${SRCROOT}/Music.cpp
     ${INCROOT}/Music.hpp
     ${SRCROOT}/Sound.cpp
@@ -60,7 +61,7 @@ source_group("codecs" FILES ${CODECS_SRC})
 # See: https://miniaud.io/docs/manual/index.html#Building
 if(SFML_OS_IOS)
     enable_language(OBJCXX)
-    set_source_files_properties(${SRCROOT}/AudioDevice.cpp PROPERTIES LANGUAGE OBJCXX)
+    set_source_files_properties(${SRCROOT}/Miniaudio.cpp PROPERTIES LANGUAGE OBJCXX)
 endif()
 
 # let CMake know about our additional audio libraries paths (on Android and OSX)

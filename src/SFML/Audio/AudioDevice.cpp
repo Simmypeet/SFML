@@ -35,7 +35,6 @@
 #pragma GCC diagnostic ignored "-Wnull-dereference"
 #endif
 
-#define MINIAUDIO_IMPLEMENTATION
 #include <miniaudio.h>
 
 #if defined(__GNUC__)
