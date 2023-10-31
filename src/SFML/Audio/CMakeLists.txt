@@ -80,7 +80,7 @@ sfml_add_library(Audio
                  SOURCES ${SRC} ${CODECS_SRC})
 
 # avoids warnings in vorbisfile.h
-target_compile_definitions(sfml-audio PRIVATE OV_EXCLUDE_STATIC_CALLBACKS FLAC__NO_DLL)
+target_compile_definitions(sfml-audio PRIVATE OV_EXCLUDE_STATIC_CALLBACKS FLAC__NO_DLL MA_NO_DECODING MA_NO_ENCODING)
 
 # setup dependencies
 target_link_libraries(sfml-audio
