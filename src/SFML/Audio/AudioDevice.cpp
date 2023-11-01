@@ -29,17 +29,7 @@
 
 #include <SFML/System/Err.hpp>
 
-// Work around MinGW warning
-#if defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnull-dereference"
-#endif
-
 #include <miniaudio.h>
-
-#if defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
 
 #include <algorithm>
 #include <optional>

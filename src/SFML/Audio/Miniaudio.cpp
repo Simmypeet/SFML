@@ -25,5 +25,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#if defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wnull-dereference" // Work around MinGW warning
+#endif
 #define MINIAUDIO_IMPLEMENTATION
 #include <miniaudio.h>
