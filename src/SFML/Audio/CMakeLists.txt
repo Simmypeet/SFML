@@ -65,7 +65,7 @@ if(SFML_OS_IOS)
 endif()
 
 # let CMake know about our additional audio libraries paths (on Android and OSX)
-if(SFML_OS_MACOSX)
+if(SFML_OS_MACOS)
     list(APPEND CMAKE_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/extlibs/libs-macos/Frameworks")
 elseif(SFML_OS_ANDROID)
     list(APPEND CMAKE_INCLUDE_PATH "${PROJECT_SOURCE_DIR}/extlibs/android")
