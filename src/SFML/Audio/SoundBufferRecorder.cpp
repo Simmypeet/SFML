@@ -25,7 +25,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/SoundBuffer.hpp>
 #include <SFML/Audio/SoundBufferRecorder.hpp>
 
 #include <SFML/System/Err.hpp>
@@ -33,27 +32,10 @@
 #include <algorithm>
 #include <iterator>
 #include <ostream>
-#include <vector>
 
 
 namespace sf
 {
-struct SoundBufferRecorder::Impl
-{
-    ////////////////////////////////////////////////////////////
-    // Member data
-    ////////////////////////////////////////////////////////////
-    std::vector<std::int16_t> m_samples; //!< Temporary sample buffer to hold the recorded data
-    SoundBuffer               m_buffer;  //!< Sound buffer that will contain the recorded data
-};
-
-
-////////////////////////////////////////////////////////////
-SoundBufferRecorder::SoundBufferRecorder() : m_impl(std::make_unique<Impl>())
-{
-}
-
-
 ////////////////////////////////////////////////////////////
 SoundBufferRecorder::~SoundBufferRecorder()
 {
@@ -65,8 +47,8 @@ SoundBufferRecorder::~SoundBufferRecorder()
 ////////////////////////////////////////////////////////////
 bool SoundBufferRecorder::onStart()
 {
-    m_impl->m_samples.clear();
-    m_impl->m_buffer = SoundBuffer();
+    m_samples.clear();
+    m_buffer = SoundBuffer();
 
     return true;
 }
@@ -75,7 +57,7 @@ bool SoundBufferRecorder::onStart()
 ////////////////////////////////////////////////////////////
 bool SoundBufferRecorder::onProcessSamples(const std::int16_t* samples, std::size_t sampleCount)
 {
-    std::copy(samples, samples + sampleCount, std::back_inserter(m_impl->m_samples));
+    std::copy(samples, samples + sampleCount, std::back_inserter(m_samples));
 
     return true;
 }
@@ -84,14 +66,10 @@ bool SoundBufferRecorder::onProcessSamples(const std::int16_t* samples, std::siz
 ////////////////////////////////////////////////////////////
 void SoundBufferRecorder::onStop()
 {
-    if (m_impl->m_samples.empty())
+    if (m_samples.empty())
         return;
 
-    if (!m_impl->m_buffer.loadFromSamples(m_impl->m_samples.data(),
-                                          m_impl->m_samples.size(),
-                                          getChannelCount(),
-                                          getSampleRate(),
-                                          getChannelMap()))
+    if (!m_buffer.loadFromSamples(m_samples.data(), m_samples.size(), getChannelCount(), getSampleRate(), getChannelMap()))
         err() << "Failed to stop capturing audio data" << std::endl;
 }
 
@@ -99,7 +77,7 @@ void SoundBufferRecorder::onStop()
 ////////////////////////////////////////////////////////////
 const SoundBuffer& SoundBufferRecorder::getBuffer() const
 {
-    return m_impl->m_buffer;
+    return m_buffer;
 }
 
 } // namespace sf
