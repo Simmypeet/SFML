@@ -85,10 +85,10 @@ struct AudioDevice::Impl
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::optional<ma_log>     m_log;            //!< The miniaudio log
-    std::optional<ma_context> m_context;        //!< The miniaudio context
-    std::optional<ma_device>  m_playbackDevice; //!< The miniaudio playback device
-    std::optional<ma_engine>  m_engine;         //!< The miniaudio engine (used for effects and spatialisation)
+    std::optional<ma_log>     log;            //!< The miniaudio log
+    std::optional<ma_context> context;        //!< The miniaudio context
+    std::optional<ma_device>  playbackDevice; //!< The miniaudio playback device
+    std::optional<ma_engine>  engine;         //!< The miniaudio engine (used for effects and spatialisation)
 };
 
 
@@ -96,17 +96,17 @@ struct AudioDevice::Impl
 AudioDevice::AudioDevice() : m_impl(std::make_unique<Impl>())
 {
     // Create the log
-    m_impl->m_log.emplace();
+    m_impl->log.emplace();
 
-    if (auto result = ma_log_init(nullptr, &*m_impl->m_log); result != MA_SUCCESS)
+    if (auto result = ma_log_init(nullptr, &*m_impl->log); result != MA_SUCCESS)
     {
-        m_impl->m_log.reset();
+        m_impl->log.reset();
         err() << "Failed to initialize the audio log: " << ma_result_description(result) << std::endl;
         return;
     }
 
     // Register our logging callback to output any warning/error messages
-    if (auto result = ma_log_register_callback(&*m_impl->m_log,
+    if (auto result = ma_log_register_callback(&*m_impl->log,
                                                ma_log_callback_init(
                                                    [](void*, ma_uint32 level, const char* message)
                                                    {
@@ -119,79 +119,79 @@ AudioDevice::AudioDevice() : m_impl(std::make_unique<Impl>())
         err() << "Failed to register audio log callback: " << ma_result_description(result) << std::endl;
 
     // Create the context
-    m_impl->m_context.emplace();
+    m_impl->context.emplace();
 
     auto contextConfig = ma_context_config_init();
-    contextConfig.pLog = &*m_impl->m_log;
+    contextConfig.pLog = &*m_impl->log;
 
-    if (auto result = ma_context_init(nullptr, 0, &contextConfig, &*m_impl->m_context); result != MA_SUCCESS)
+    if (auto result = ma_context_init(nullptr, 0, &contextConfig, &*m_impl->context); result != MA_SUCCESS)
     {
-        m_impl->m_context.reset();
+        m_impl->context.reset();
         err() << "Failed to initialize the audio context: " << ma_result_description(result) << std::endl;
         return;
     }
 
     // Create the playback device
-    m_impl->m_playbackDevice.emplace();
+    m_impl->playbackDevice.emplace();
 
     auto playbackDeviceConfig         = ma_device_config_init(ma_device_type_playback);
     playbackDeviceConfig.dataCallback = [](ma_device* device, void* output, const void*, ma_uint32 frameCount)
     {
         auto& impl = *static_cast<Impl*>(device->pUserData);
 
-        if (impl.m_engine)
+        if (impl.engine)
         {
-            if (auto result = ma_engine_read_pcm_frames(&*impl.m_engine, output, frameCount, nullptr); result != MA_SUCCESS)
+            if (auto result = ma_engine_read_pcm_frames(&*impl.engine, output, frameCount, nullptr); result != MA_SUCCESS)
                 err() << "Failed to read PCM frames from audio engine: " << ma_result_description(result) << std::endl;
         }
     };
     playbackDeviceConfig.pUserData = m_impl.get();
 
-    if (auto result = ma_device_init(&*m_impl->m_context, &playbackDeviceConfig, &*m_impl->m_playbackDevice);
+    if (auto result = ma_device_init(&*m_impl->context, &playbackDeviceConfig, &*m_impl->playbackDevice);
         result != MA_SUCCESS)
     {
-        m_impl->m_playbackDevice.reset();
+        m_impl->playbackDevice.reset();
         err() << "Failed to initialize the audio playback device: " << ma_result_description(result) << std::endl;
         return;
     }
 
     // Create the engine
     auto engineConfig          = ma_engine_config_init();
-    engineConfig.pContext      = &*m_impl->m_context;
-    engineConfig.pDevice       = &*m_impl->m_playbackDevice;
+    engineConfig.pContext      = &*m_impl->context;
+    engineConfig.pDevice       = &*m_impl->playbackDevice;
     engineConfig.listenerCount = 1;
 
-    m_impl->m_engine.emplace();
+    m_impl->engine.emplace();
 
-    if (auto result = ma_engine_init(&engineConfig, &*m_impl->m_engine); result != MA_SUCCESS)
+    if (auto result = ma_engine_init(&engineConfig, &*m_impl->engine); result != MA_SUCCESS)
     {
-        m_impl->m_engine.reset();
+        m_impl->engine.reset();
         err() << "Failed to initialize the audio engine: " << ma_result_description(result) << std::endl;
         return;
     }
 
     // Set master volume, position, velocity, cone and world up vector
-    if (auto result = ma_device_set_master_volume(ma_engine_get_device(&*m_impl->m_engine),
+    if (auto result = ma_device_set_master_volume(ma_engine_get_device(&*m_impl->engine),
                                                   Impl::getListenerProperties().volume * 0.01f);
         result != MA_SUCCESS)
         err() << "Failed to set audio device master volume: " << ma_result_description(result) << std::endl;
 
-    ma_engine_listener_set_position(&*m_impl->m_engine,
+    ma_engine_listener_set_position(&*m_impl->engine,
                                     0,
                                     Impl::getListenerProperties().position.x,
                                     Impl::getListenerProperties().position.y,
                                     Impl::getListenerProperties().position.z);
-    ma_engine_listener_set_velocity(&*m_impl->m_engine,
+    ma_engine_listener_set_velocity(&*m_impl->engine,
                                     0,
                                     Impl::getListenerProperties().velocity.x,
                                     Impl::getListenerProperties().velocity.y,
                                     Impl::getListenerProperties().velocity.z);
-    ma_engine_listener_set_cone(&*m_impl->m_engine,
+    ma_engine_listener_set_cone(&*m_impl->engine,
                                 0,
                                 Impl::getListenerProperties().cone.innerAngle.asRadians(),
                                 Impl::getListenerProperties().cone.outerAngle.asRadians(),
                                 Impl::getListenerProperties().cone.outerGain);
-    ma_engine_listener_set_world_up(&*m_impl->m_engine,
+    ma_engine_listener_set_world_up(&*m_impl->engine,
                                     0,
                                     Impl::getListenerProperties().upVector.x,
                                     Impl::getListenerProperties().upVector.y,
@@ -203,20 +203,20 @@ AudioDevice::AudioDevice() : m_impl(std::make_unique<Impl>())
 AudioDevice::~AudioDevice()
 {
     // Destroy the engine
-    if (m_impl->m_engine)
-        ma_engine_uninit(&*m_impl->m_engine);
+    if (m_impl->engine)
+        ma_engine_uninit(&*m_impl->engine);
 
     // Destroy the playback device
-    if (m_impl->m_playbackDevice)
-        ma_device_uninit(&*m_impl->m_playbackDevice);
+    if (m_impl->playbackDevice)
+        ma_device_uninit(&*m_impl->playbackDevice);
 
     // Destroy the context
-    if (m_impl->m_context)
-        ma_context_uninit(&*m_impl->m_context);
+    if (m_impl->context)
+        ma_context_uninit(&*m_impl->context);
 
     // Destroy the log
-    if (m_impl->m_log)
-        ma_log_uninit(&*m_impl->m_log);
+    if (m_impl->log)
+        ma_log_uninit(&*m_impl->log);
 }
 
 
@@ -225,8 +225,8 @@ void* AudioDevice::getEngine()
 {
     auto* instance = Impl::getInstance();
 
-    if (instance && instance->m_engine)
-        return &*instance->m_engine;
+    if (instance && instance->engine)
+        return &*instance->engine;
 
     return nullptr;
 }
@@ -240,10 +240,10 @@ void AudioDevice::setGlobalVolume(float volume)
 
     auto* instance = Impl::getInstance();
 
-    if (!instance || !instance->m_engine)
+    if (!instance || !instance->engine)
         return;
 
-    if (auto result = ma_device_set_master_volume(ma_engine_get_device(&*instance->m_engine), volume * 0.01f);
+    if (auto result = ma_device_set_master_volume(ma_engine_get_device(&*instance->engine), volume * 0.01f);
         result != MA_SUCCESS)
         err() << "Failed to set audio device master volume: " << ma_result_description(result) << std::endl;
 }
@@ -264,10 +264,10 @@ void AudioDevice::setPosition(const Vector3f& position)
 
     auto* instance = Impl::getInstance();
 
-    if (!instance || !instance->m_engine)
+    if (!instance || !instance->engine)
         return;
 
-    ma_engine_listener_set_position(&*instance->m_engine, 0, position.x, position.y, position.z);
+    ma_engine_listener_set_position(&*instance->engine, 0, position.x, position.y, position.z);
 }
 
 
@@ -286,10 +286,10 @@ void AudioDevice::setDirection(const Vector3f& direction)
 
     auto* instance = Impl::getInstance();
 
-    if (!instance || !instance->m_engine)
+    if (!instance || !instance->engine)
         return;
 
-    ma_engine_listener_set_direction(&*instance->m_engine, 0, direction.x, direction.y, direction.z);
+    ma_engine_listener_set_direction(&*instance->engine, 0, direction.x, direction.y, direction.z);
 }
 
 
@@ -308,10 +308,10 @@ void AudioDevice::setVelocity(const Vector3f& velocity)
 
     auto* instance = Impl::getInstance();
 
-    if (!instance || !instance->m_engine)
+    if (!instance || !instance->engine)
         return;
 
-    ma_engine_listener_set_velocity(&*instance->m_engine, 0, velocity.x, velocity.y, velocity.z);
+    ma_engine_listener_set_velocity(&*instance->engine, 0, velocity.x, velocity.y, velocity.z);
 }
 
 
@@ -330,10 +330,10 @@ void AudioDevice::setCone(const Listener::Cone& cone)
 
     auto* instance = Impl::getInstance();
 
-    if (!instance || !instance->m_engine)
+    if (!instance || !instance->engine)
         return;
 
-    ma_engine_listener_set_cone(&*instance->m_engine,
+    ma_engine_listener_set_cone(&*instance->engine,
                                 0,
                                 std::clamp(cone.innerAngle.asRadians(), 0.f, sf::degrees(360).asRadians()),
                                 std::clamp(cone.outerAngle.asRadians(), 0.f, sf::degrees(360).asRadians()),
@@ -356,10 +356,10 @@ void AudioDevice::setUpVector(const Vector3f& upVector)
 
     auto* instance = Impl::getInstance();
 
-    if (!instance || !instance->m_engine)
+    if (!instance || !instance->engine)
         return;
 
-    ma_engine_listener_set_world_up(&*instance->m_engine, 0, upVector.x, upVector.y, upVector.z);
+    ma_engine_listener_set_world_up(&*instance->engine, 0, upVector.x, upVector.y, upVector.z);
 }
 
 
