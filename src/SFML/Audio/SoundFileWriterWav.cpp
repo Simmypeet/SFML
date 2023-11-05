@@ -292,7 +292,7 @@ bool SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
     encode(m_file, sampleRate);
     const std::uint32_t byteRate = sampleRate * channelCount * 2;
     encode(m_file, byteRate);
-    auto blockAlign = static_cast<std::uint16_t>(channelCount * 2);
+    const auto blockAlign = static_cast<std::uint16_t>(channelCount * 2);
     encode(m_file, blockAlign);
     const std::uint16_t bitsPerSample = 16;
     encode(m_file, bitsPerSample);
