@@ -31,50 +31,22 @@
 #include <SFML/Audio/SoundBuffer.hpp>
 
 #include <SFML/System/Err.hpp>
-#include <SFML/System/Time.hpp>
 
 #include <exception>
 #include <memory>
 #include <ostream>
 #include <string>
-#include <unordered_set>
-#include <vector>
+#include <utility>
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-struct SoundBuffer::Impl
-{
-    ////////////////////////////////////////////////////////////
-    // Types
-    ////////////////////////////////////////////////////////////
-    using SoundList = std::unordered_set<Sound*>; //!< Set of unique sound instances
-
-    ////////////////////////////////////////////////////////////
-    // Member data
-    ////////////////////////////////////////////////////////////
-    std::vector<std::int16_t> m_samples;                        //!< Samples buffer
-    unsigned int              m_channelCount{1};                //!< Number of channels of the sound
-    unsigned int              m_sampleRate{44100};              //!< Number of samples per second
-    std::vector<SoundChannel> m_channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
-    Time                      m_duration;                       //!< Sound duration
-    mutable SoundList         m_sounds;                         //!< List of sounds that are using this buffer
-};
-
-
-////////////////////////////////////////////////////////////
-SoundBuffer::SoundBuffer() : m_impl(std::make_unique<Impl>())
-{
-}
-
-
-////////////////////////////////////////////////////////////
 SoundBuffer::SoundBuffer(const SoundBuffer& copy) : SoundBuffer()
 {
     // don't copy the attached sounds
-    m_impl->m_samples  = copy.m_impl->m_samples;
-    m_impl->m_duration = copy.m_impl->m_duration;
+    m_samples  = copy.m_samples;
+    m_duration = copy.m_duration;
 
     // Update the internal buffer with the new samples
     if (!update(copy.getChannelCount(), copy.getSampleRate(), copy.getChannelMap()))
@@ -88,8 +60,8 @@ SoundBuffer::~SoundBuffer()
     // To prevent the iterator from becoming invalid, move the entire buffer to another
     // container. Otherwise calling resetBuffer would result in detachSound being
     // called which removes the sound from the internal list.
-    Impl::SoundList sounds;
-    sounds.swap(m_impl->m_sounds);
+    SoundList sounds;
+    sounds.swap(m_sounds);
 
     // Detach the buffer from the sounds that use it
     for (Sound* soundPtr : sounds)
@@ -140,7 +112,7 @@ bool SoundBuffer::loadFromSamples(const std::int16_t*              samples,
     if (samples && sampleCount && channelCount && sampleRate && !channelMap.empty())
     {
         // Copy the new audio samples
-        m_impl->m_samples.assign(samples, samples + sampleCount);
+        m_samples.assign(samples, samples + sampleCount);
 
         // Update the internal buffer with the new samples
         return update(channelCount, sampleRate, channelMap);
@@ -167,7 +139,7 @@ bool SoundBuffer::saveToFile(const std::filesystem::path& filename) const
     if (file.openFromFile(filename, getSampleRate(), getChannelCount(), getChannelMap()))
     {
         // Write the samples to the opened file
-        file.write(m_impl->m_samples.data(), m_impl->m_samples.size());
+        file.write(m_samples.data(), m_samples.size());
 
         return true;
     }
@@ -181,56 +153,56 @@ bool SoundBuffer::saveToFile(const std::filesystem::path& filename) const
 ////////////////////////////////////////////////////////////
 const std::int16_t* SoundBuffer::getSamples() const
 {
-    return m_impl->m_samples.empty() ? nullptr : m_impl->m_samples.data();
+    return m_samples.empty() ? nullptr : m_samples.data();
 }
 
 
 ////////////////////////////////////////////////////////////
 std::uint64_t SoundBuffer::getSampleCount() const
 {
-    return m_impl->m_samples.size();
+    return m_samples.size();
 }
 
 
 ////////////////////////////////////////////////////////////
 unsigned int SoundBuffer::getSampleRate() const
 {
-    return m_impl->m_sampleRate;
+    return m_sampleRate;
 }
 
 
 ////////////////////////////////////////////////////////////
 unsigned int SoundBuffer::getChannelCount() const
 {
-    return m_impl->m_channelCount;
+    return m_channelCount;
 }
 
 
 ////////////////////////////////////////////////////////////
 std::vector<SoundChannel> SoundBuffer::getChannelMap() const
 {
-    return m_impl->m_channelMap;
+    return m_channelMap;
 }
 
 
 ////////////////////////////////////////////////////////////
 Time SoundBuffer::getDuration() const
 {
-    return m_impl->m_duration;
+    return m_duration;
 }
 
 
 ////////////////////////////////////////////////////////////
 SoundBuffer& SoundBuffer::operator=(const SoundBuffer& right)
 {
-    const SoundBuffer& temp(right);
+    SoundBuffer temp(right);
 
-    std::swap(m_impl->m_samples, temp.m_impl->m_samples);
-    std::swap(m_impl->m_channelCount, temp.m_impl->m_channelCount);
-    std::swap(m_impl->m_sampleRate, temp.m_impl->m_sampleRate);
-    std::swap(m_impl->m_channelMap, temp.m_impl->m_channelMap);
-    std::swap(m_impl->m_duration, temp.m_impl->m_duration);
-    std::swap(m_impl->m_sounds, temp.m_impl->m_sounds); // swap sounds too, so that they are detached when temp is destroyed
+    std::swap(m_samples, temp.m_samples);
+    std::swap(m_channelCount, temp.m_channelCount);
+    std::swap(m_sampleRate, temp.m_sampleRate);
+    std::swap(m_channelMap, temp.m_channelMap);
+    std::swap(m_duration, temp.m_duration);
+    std::swap(m_sounds, temp.m_sounds); // swap sounds too, so that they are detached when temp is destroyed
 
     return *this;
 }
@@ -243,8 +215,8 @@ bool SoundBuffer::initialize(InputSoundFile& file)
     const std::uint64_t sampleCount = file.getSampleCount();
 
     // Read the samples from the provided file
-    m_impl->m_samples.resize(static_cast<std::size_t>(sampleCount));
-    if (file.read(m_impl->m_samples.data(), sampleCount) == sampleCount)
+    m_samples.resize(static_cast<std::size_t>(sampleCount));
+    if (file.read(m_samples.data(), sampleCount) == sampleCount)
     {
         // Update the internal buffer with the new samples
         return update(file.getChannelCount(), file.getSampleRate(), file.getChannelMap());
@@ -263,20 +235,20 @@ bool SoundBuffer::update(unsigned int channelCount, unsigned int sampleRate, con
     if (!channelCount || !sampleRate || (channelMap.size() != channelCount))
         return false;
 
-    m_impl->m_channelCount = channelCount;
-    m_impl->m_sampleRate   = sampleRate;
-    m_impl->m_channelMap   = channelMap;
+    m_channelCount = channelCount;
+    m_sampleRate   = sampleRate;
+    m_channelMap   = channelMap;
 
     // First make a copy of the list of sounds so we can reattach later
-    const Impl::SoundList sounds(m_impl->m_sounds);
+    const SoundList sounds(m_sounds);
 
     // Detach the buffer from the sounds that use it
     for (Sound* soundPtr : sounds)
         soundPtr->detachBuffer();
 
     // Compute the duration
-    m_impl->m_duration = seconds(
-        static_cast<float>(m_impl->m_samples.size()) / static_cast<float>(sampleRate) / static_cast<float>(channelCount));
+    m_duration = seconds(
+        static_cast<float>(m_samples.size()) / static_cast<float>(sampleRate) / static_cast<float>(channelCount));
 
     // Now reattach the buffer to the sounds that use it
     for (Sound* soundPtr : sounds)
@@ -289,14 +261,14 @@ bool SoundBuffer::update(unsigned int channelCount, unsigned int sampleRate, con
 ////////////////////////////////////////////////////////////
 void SoundBuffer::attachSound(Sound* sound) const
 {
-    m_impl->m_sounds.insert(sound);
+    m_sounds.insert(sound);
 }
 
 
 ////////////////////////////////////////////////////////////
 void SoundBuffer::detachSound(Sound* sound) const
 {
-    m_impl->m_sounds.erase(sound);
+    m_sounds.erase(sound);
 }
 
 } // namespace sf
