@@ -268,7 +268,7 @@ SoundSource::Cone SoundSource::getCone() const
         return cone;
     }
 
-    return Cone{sf::Angle(), sf::Angle(), 0.f};
+    return Cone{sf::radians(0), sf::radians(0), 0.f};
 }
 
 
