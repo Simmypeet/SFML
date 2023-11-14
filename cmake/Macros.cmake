@@ -38,8 +38,14 @@ endfunction()
 function(sfml_set_common_ios_properties target)
     # enable automatic reference counting on iOS
     sfml_set_xcode_property(${target} CLANG_ENABLE_OBJC_ARC YES)
-    sfml_set_xcode_property(${target} IPHONEOS_DEPLOYMENT_TARGET "${SFML_IOS_DEPLOYMENT_TARGET}")
-    sfml_set_xcode_property(${target} CODE_SIGN_IDENTITY "${SFML_CODE_SIGN_IDENTITY}")
+
+    if(SFML_IOS_DEPLOYMENT_TARGET)
+        sfml_set_xcode_property(${target} IPHONEOS_DEPLOYMENT_TARGET "${SFML_IOS_DEPLOYMENT_TARGET}")
+    endif()
+
+    if(SFML_CODE_SIGN_IDENTITY)
+        sfml_set_xcode_property(${target} CODE_SIGN_IDENTITY "${SFML_CODE_SIGN_IDENTITY}")
+    endif()
 
     get_target_property(target_type ${target} TYPE)
     if(target_type STREQUAL "EXECUTABLE")

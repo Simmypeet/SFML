@@ -1,3 +1,8 @@
+# define variables
+set(ARCH_32BITS "")
+set(ARCH_64BITS "")
+set(SFML_OS_ANDROID "")
+
 # detect the OS
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     set(SFML_OS_WINDOWS 1)
@@ -68,6 +73,7 @@ endif()
 # Note: The detection is order is important because:
 # - Visual Studio can both use MSVC and Clang
 # - GNUCXX can still be set on macOS when using Clang
+set(SFML_COMPILER_MSVC)
 if(MSVC)
     set(SFML_COMPILER_MSVC 1)
 

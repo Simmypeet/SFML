@@ -380,7 +380,7 @@ else()
     # NOTE: it's not required to link against SFML.framework
     set_target_properties(SFML PROPERTIES INSTALL_NAME_DIR "@rpath")
     if(NOT CMAKE_SKIP_BUILD_RPATH)
-        set_target_properties(${target} PROPERTIES BUILD_WITH_INSTALL_NAME_DIR TRUE)
+        set_target_properties(SFML PROPERTIES BUILD_WITH_INSTALL_NAME_DIR TRUE)
     endif()
 
     # install rule
