@@ -79,7 +79,7 @@ struct SFML_GRAPHICS_API StencilMode
     /// Constructs a stencil mode that disables stencil testing
     ///
     ////////////////////////////////////////////////////////////
-    StencilMode();
+    StencilMode() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a stencil mode given the function, operation and reference value.

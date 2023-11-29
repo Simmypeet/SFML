@@ -31,10 +31,6 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-StencilMode::StencilMode() = default;
-
-
-////////////////////////////////////////////////////////////
 StencilMode::StencilMode(StencilComparison      theStencilComparison,
                          StencilUpdateOperation theStencilUpdateOperation,
                          int                    theStencilReference,

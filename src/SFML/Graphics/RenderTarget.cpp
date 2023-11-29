@@ -604,6 +604,7 @@ void RenderTarget::resetGLStates()
         glCheck(glEnableClientState(GL_COLOR_ARRAY));
         glCheck(glEnableClientState(GL_TEXTURE_COORD_ARRAY));
         glCheck(glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE));
+        m_cache.scissorEnabled = false;
         m_cache.stencilEnabled = false;
         m_cache.glStatesSet    = true;
 

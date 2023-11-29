@@ -1,4 +1,3 @@
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -13,7 +12,7 @@
 int main()
 {
     // Create the window of the application with a stencil buffer
-    sf::RenderWindow window(sf::VideoMode({static_cast<unsigned int>(600), static_cast<unsigned int>(600)}),
+    sf::RenderWindow window(sf::VideoMode({600, 600}),
                             "SFML Stencil",
                             sf::Style::Titlebar | sf::Style::Close,
                             sf::ContextSettings(0, 8));

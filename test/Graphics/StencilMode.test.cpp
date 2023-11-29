@@ -1,14 +1,16 @@
+#include <SFML/Graphics/StencilMode.hpp>
+
+// Other 1st party headers
 #include <SFML/Graphics/Image.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
-#include <SFML/Graphics/StencilMode.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
 #include <GraphicsUtil.hpp>
 #include <type_traits>
 
-TEST_CASE("[Graphics] sf::StencilMode Non-Draw")
+TEST_CASE("[Graphics] sf::StencilMode", runDisplayTests())
 {
     SECTION("Type traits")
     {
@@ -67,10 +69,7 @@ TEST_CASE("[Graphics] sf::StencilMode Non-Draw")
                   sf::StencilMode(sf::StencilComparison::Equal, sf::StencilUpdateOperation::Replace, 1, 0u, true));
         }
     }
-}
 
-TEST_CASE("[Graphics] sf::StencilMode Draw", runDisplayTests())
-{
     sf::RenderTexture renderTexture;
     REQUIRE(renderTexture.create({100, 100}, sf::ContextSettings(0, 8)) == true);
     renderTexture.clear(sf::Color::Red, 127);

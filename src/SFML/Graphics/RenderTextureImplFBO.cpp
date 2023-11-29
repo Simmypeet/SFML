@@ -224,7 +224,6 @@ bool RenderTextureImplFBO::create(const Vector2u& size, unsigned int textureId, 
             }
             else if (settings.stencilBits)
             {
-
                 GLuint depthStencil = 0;
                 glCheck(GLEXT_glGenRenderbuffers(1, &depthStencil));
                 m_depthStencilBuffer = depthStencil;
