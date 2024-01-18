@@ -38,6 +38,43 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+void U8StringCharTraits::assign(char_type& c1, char_type c2) noexcept
+{
+    c1 = c2;
+}
+
+
+////////////////////////////////////////////////////////////
+int U8StringCharTraits::compare(const char_type* s1, const char_type* s2, std::size_t n)
+{
+    return std::memcmp(s1, s2, n);
+}
+
+
+////////////////////////////////////////////////////////////
+std::size_t U8StringCharTraits::length(const char_type* s)
+{
+    return std::strlen(reinterpret_cast<const char*>(s));
+}
+
+
+////////////////////////////////////////////////////////////
+U8StringCharTraits::char_type* U8StringCharTraits::move(char_type* s1, const char_type* s2, std::size_t n)
+{
+    std::memmove(s1, s2, n);
+    return s1;
+}
+
+
+////////////////////////////////////////////////////////////
+U8StringCharTraits::char_type* U8StringCharTraits::copy(char_type* s1, const char_type* s2, std::size_t n)
+{
+    std::memcpy(s1, s2, n);
+    return s1;
+}
+
+
+////////////////////////////////////////////////////////////
 String::String(char ansiChar, const std::locale& locale)
 {
     m_string += Utf32::decodeAnsi(ansiChar, locale);
@@ -161,10 +198,10 @@ std::wstring String::toWideString() const
 
 
 ////////////////////////////////////////////////////////////
-std::basic_string<std::uint8_t> String::toUtf8() const
+sf::U8String String::toUtf8() const
 {
     // Prepare the output string
-    std::basic_string<std::uint8_t> output;
+    sf::U8String output;
     output.reserve(m_string.length());
 
     // Convert

@@ -40,6 +40,39 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+/// \brief Character traits for std::uint8_t
+///
+////////////////////////////////////////////////////////////
+struct SFML_SYSTEM_API U8StringCharTraits
+{
+    ////////////////////////////////////////////////////////////
+    /// \brief Type traits and static members
+    ///
+    /// These type traits and static members meet the requirements
+    /// for custom character traits.
+    /// https://en.cppreference.com/w/cpp/string/char_traits
+    ///
+    ////////////////////////////////////////////////////////////
+    using char_type = std::uint8_t;
+
+    static void        assign(char_type& c1, char_type c2) noexcept;
+    static int         compare(const char_type* s1, const char_type* s2, std::size_t n);
+    static std::size_t length(const char_type* s);
+    static char_type*  move(char_type* s1, const char_type* s2, std::size_t n);
+    static char_type*  copy(char_type* s1, const char_type* s2, std::size_t n);
+};
+
+////////////////////////////////////////////////////////////
+/// \brief Portable replacement for std::basic_string<std::uint8_t>
+///
+/// While all major C++ implementations happen to define this
+/// as of early 2024, this specialization is not strictly speaking
+/// standard C++. Thus we can't depend on its continued existence.
+///
+////////////////////////////////////////////////////////////
+using U8String = std::basic_string<std::uint8_t, U8StringCharTraits>;
+
+////////////////////////////////////////////////////////////
 /// \brief Utility string class that automatically handles
 ///        conversions between types and encodings
 ///
@@ -269,7 +302,7 @@ public:
     /// \see toUtf16, toUtf32
     ///
     ////////////////////////////////////////////////////////////
-    std::basic_string<std::uint8_t> toUtf8() const;
+    sf::U8String toUtf8() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert the Unicode string to a UTF-16 string
