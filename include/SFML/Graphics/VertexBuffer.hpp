@@ -191,11 +191,14 @@ public:
     /// \param vertices    Array of vertices to copy to the buffer
     /// \param vertexCount Number of vertices to copy
     /// \param offset      Offset in the buffer to copy to
+    /// \param discard     True to discard the previous contents of the buffer.
+    ///                    This tell the implementation to not wait for the
+    ///                    synchronization to occur and overwrite the existing
     ///
     /// \return True if the update was successful
     ///
     ////////////////////////////////////////////////////////////
-    bool update(const Vertex* vertices, std::size_t vertexCount, unsigned int offset);
+    bool update(const Vertex* vertices, std::size_t vertexCount, unsigned int offset, bool discard = false);
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy the contents of another buffer into this buffer

@@ -171,7 +171,7 @@ bool VertexBuffer::update(const Vertex* vertices)
 
 
 ////////////////////////////////////////////////////////////
-bool VertexBuffer::update(const Vertex* vertices, std::size_t vertexCount, unsigned int offset)
+bool VertexBuffer::update(const Vertex* vertices, std::size_t vertexCount, unsigned int offset, bool discard)
 {
     // Sanity checks
     if (!m_buffer)
@@ -188,7 +188,7 @@ bool VertexBuffer::update(const Vertex* vertices, std::size_t vertexCount, unsig
     glCheck(GLEXT_glBindBuffer(GLEXT_GL_ARRAY_BUFFER, m_buffer));
 
     // Check if we need to resize or orphan the buffer
-    if (vertexCount >= m_size)
+    if (vertexCount >= m_size || discard)
     {
         glCheck(GLEXT_glBufferData(GLEXT_GL_ARRAY_BUFFER, static_cast<GLsizeiptrARB>(sizeof(Vertex) * vertexCount), 0, VertexBufferImpl::usageToGlEnum(m_usage)));
 
